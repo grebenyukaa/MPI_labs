@@ -10,7 +10,7 @@
 #define ABORTION_CODE -1
 
 //#define COMPUTATION_PLAIN
-#define COMPUTATION_MPI
+//#define COMPUTATION_MPI
 //#define COMPUTATION_MPI_OMP
 
 class Matrix
