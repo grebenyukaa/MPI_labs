@@ -243,7 +243,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
             std::vector<value_type> resp(3);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, rowid, MPI_COMM_WORLD, NULL);
+                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, rowid, MPI_COMM_WORLD, &status);
                 //MPI::COMM_WORLD.Recv(&resp[0], 3, MPI::DOUBLE, nodeid, rowid);
             }
             log << "  done." << std::endl;
@@ -317,7 +317,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             std::vector<value_type> row(row_sz);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI_Recv(&row[0], row_sz, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD, NULL);
+                MPI_Recv(&row[0], row_sz, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD, &status);
                 //MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
             }
             log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
