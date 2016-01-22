@@ -1,14 +1,15 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+#include <ctime>
 
 #include <mpi.h>
 
 #include "mpi_scope.h"
 #include "matrix.h"
 
-static const int msize = 8;
-static const double precision = 1e-7;
+static const int msize = 1000;
+static const double precision = 1e-6;
 
 int main()
 {
@@ -32,13 +33,34 @@ int main()
                     m.at(j, i) = i + 1 + d;
                 }
             }
-            std::cout << m << std::endl;
-
+            //std::cout << m << std::endl;
+            std::cout << "Computation start" << std::endl;
+            double before, after;
+#if defined(MATRIX_MUL_MPI) || defined(MATRIX_MUL_MPI_OMP)
+            before = MPI::Wtime();
+#elif defined(MATRIX_MUL_PLAIN)
+            before = clock();
+#endif
             m.compute_eigenvalues(precision);
+
+#if defined(MATRIX_MUL_MPI) || defined(MATRIX_MUL_MPI_OMP)
+            after = MPI::Wtime();
+#elif defined(MATRIX_MUL_PLAIN)
+            after = clock();
+#endif
+            /*std::cout << "Computed eigenvalues:" << std::endl;
             const std::vector<double>& evs = m.getEigenValues();
             for (size_t i = 0; i < evs.size(); ++i)
                 std::cout << std::setw(10) << evs[i];
+            std::cout << std::endl;*/
+
             std::cout << std::endl;
+            std::cout << "Time elapsed:";
+#if defined(MATRIX_MUL_MPI) || defined(MATRIX_MUL_MPI_OMP)
+            std::cout << std::setw(10) << after - before << "s" << std::endl;
+#elif defined(MATRIX_MUL_PLAIN)
+            std::cout << std::setw(10) << (after - before) / CLOCKS_PER_SEC << "s" << std::endl;
+#endif
         }
 #if defined(MATRIX_MUL_MPI) || defined(MATRIX_MUL_MPI_OMP)
         else

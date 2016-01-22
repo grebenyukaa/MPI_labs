@@ -4,11 +4,12 @@
 #include <vector>
 #include <string>
 
-#define MIN_BATCH_SIZE 5
+#define MIN_BATCH_SIZE 100
 #define ABORTION_CODE -1
 
-//#define MATRIX_MUL_PLAIN
-#define MATRIX_MUL_MPI
+#define MATRIX_MUL_PLAIN
+//#define MATRIX_MUL_MPI
+//#define MATRIX_MUL_MPI_OMP
 
 class Matrix
 {
