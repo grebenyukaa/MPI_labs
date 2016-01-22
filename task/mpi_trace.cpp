@@ -25,13 +25,13 @@ MPI_Trace::MPI_Trace(unsigned int color)
     m_color(color)
 {
     //std::cout << "MPI_TRACE entry" << std::endl;
-    //MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);
+    MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);
 }
 
 MPI_Trace::~MPI_Trace()
 {
     //std::cout << "MPI_TRACE exit" << std::endl;
-    //MPI_Pcontrol(MPI_TRACEEVENT, "exit", m_color, 0, NULL);
+    MPI_Pcontrol(MPI_TRACEEVENT, "exit", m_color, 0, NULL);
 }
 
 void MPI_Trace::Init(const int world_rank)
