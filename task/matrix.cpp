@@ -291,7 +291,12 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             }
             index_type rowid = status.MPI_TAG/*status.Get_tag()*/;
             //index_type nodeid = status.Get_source();
-            index_type sz_to_read = status._ucount/*status.Get_count(MPI::DOUBLE)*/;
+
+            int sz_to_read_;
+            MPI_Get_count(&status, MPI_DOUBLE, &sz_to_read_);
+            index_type sz_to_read = (index_type)sz_to_read_;
+            //index_type sz_to_read = status.Get_count(MPI::DOUBLE);
+
             index_type row_sz = cols - rowid - 1;
 
             assert(sz_to_read == row_sz);
