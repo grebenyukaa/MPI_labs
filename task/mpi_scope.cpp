@@ -6,7 +6,11 @@ MPI_Scope::MPI_Scope()
 {
     //MPI::Init();
     MPI_Init(NULL, NULL);
-    //MPI::COMM_WORLD.Set_errhandler(MPI::ERRORS_THROW_EXCEPTIONS);
+
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    MPI_Trace::Init(world_rank);
 }
 
 MPI_Scope::~MPI_Scope()

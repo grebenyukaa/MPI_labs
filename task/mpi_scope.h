@@ -1,6 +1,8 @@
 #ifndef MPI_SCOPE_H
 #define MPI_SCOPE_H
 
+#include <string>
+
 class MPI_Scope
 {
 public:
@@ -13,7 +15,7 @@ public:
 class MPI_Trace
 {
 public:
-    static const char* m_trace_file_name;
+    static const std::string m_trace_file_name;
     enum Colors
     {
         ClRecv = 0xFF0000,
@@ -23,7 +25,7 @@ public:
 
     MPI_Trace(unsigned int color);
     ~MPI_Trace();
-    static void Init();
+    static void Init(const int world_rank);
 private:
     unsigned int m_color;
 };

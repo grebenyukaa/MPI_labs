@@ -24,8 +24,6 @@ int main()
         if (world_rank == 0)
 #endif //MPI
         {
-            MPI_Trace::Init();
-
             Matrix m(msize, msize);
             double d = msize;
             for (Matrix::index_type i = 0; i < m.getRowCount(); ++i)
