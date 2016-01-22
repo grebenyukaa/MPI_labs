@@ -1,5 +1,6 @@
 #include <mpi.h>
 #include <cstddef>
+#include <iostream>
 
 #include "mpi_scope.h"
 
@@ -22,6 +23,7 @@ MPI_Trace::MPI_Trace(unsigned int color)
     :
     m_color(color)
 {
+    std::cout << "MPI_TRACE entry" << std::endl;
     MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);
 }
 
@@ -32,7 +34,9 @@ MPI_Trace::~MPI_Trace()
 
 void MPI_Trace::Init()
 {
+    std::cout << "MPI_TRACE init" << std::endl;
     MPI_Pcontrol(MPI_TRACEFILES, NULL, m_trace_file_name, 0);
     MPI_Pcontrol(MPI_TRACELEVEL, 1, 1, 1);
     MPI_Pcontrol(MPI_TRACENODE, 1000000, 1, 1);
+    std::cout << "  done" << std::endl;
 }

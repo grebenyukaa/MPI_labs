@@ -6,7 +6,6 @@ MPI_Scope::MPI_Scope()
 {
     //MPI::Init();
     MPI_Init(NULL, NULL);
-    MPI_Trace::Init();
     //MPI::COMM_WORLD.Set_errhandler(MPI::ERRORS_THROW_EXCEPTIONS);
 }
 
