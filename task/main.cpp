@@ -8,8 +8,8 @@
 #include "mpi_scope.h"
 #include "matrix.h"
 
-static const int msize = 1000;
-static const double precision = 1e-6;
+static const int msize = 400;
+static const double precision = 1e-3;
 
 int main()
 {

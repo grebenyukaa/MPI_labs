@@ -63,9 +63,8 @@ const double Matrix::diagonality() const
 {
     value_type norm = 0;
     for (int i = 0; i < m_rows; ++i)
-        for (int j = 0; j < m_cols; ++j)
-            if (i != j)
-                norm += std::pow(at(i, j), 2);
+        for (int j = i + 1; j < m_cols; ++j)
+            norm += std::pow(at(i, j), 2);
     return norm;
 }
 
@@ -73,7 +72,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
 {
     value_type old_norm;
     value_type cur_norm = diagonality();
-    //int iter = 0;
+    int iter = 0;
     do
     {
         old_norm = cur_norm;
@@ -87,7 +86,8 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         //std::cout << *this << std::endl;
 
         cur_norm = diagonality();
-        //std::cout << "iteration " << iter++ << " delta = " << std::abs(cur_norm - old_norm) << " i = " << imax << " j = " << jmax << std::endl;
+        if (iter++ % NTH_PRINT == 0)
+            std::cout << "iteration " << iter++ << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
         //std::cout << "--" << std::endl;
     }
     while (std::abs(cur_norm - old_norm) >= precision);
@@ -134,7 +134,7 @@ int find_abs_max(const T* from, const int count, T& max_val)
     max_val = 0;
     int imax = 0;
 #if defined(MATRIX_MUL_MPI_OMP)
-    #pragma omp parallel for
+    #pragma omp for
 #endif
     for (int i = 0; i < count; ++i)
     {
@@ -292,7 +292,7 @@ void Matrix::jacoby_multiply_plain(const int l, const int k)
     value_type ll = at(l, l) + t * at(k, l);
 
 #if defined(MATRIX_MUL_MPI_OMP)
-    #pragma omp parallel for
+    #pragma omp for
 #endif
     for (int h = 0; h < m_cols; ++h)
     {
