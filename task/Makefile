@@ -1,4 +1,4 @@
-BUILD_DIR = ../work
+BUILD_DIR = $(realpath ../work)
 SOURCE_FILES = mpi_scope.cpp matrix.cpp main.cpp
 
 TRACE_LIB = mpi-trace
