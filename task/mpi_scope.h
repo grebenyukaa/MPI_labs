@@ -1,7 +1,9 @@
 #ifndef MPI_SCOPE_H
 #define MPI_SCOPE_H
 
-#define TRACE_FILE_NAME
+#ifdef MPITV_ENABLED
+#include<pcontrol.h>
+#endif
 
 class MPI_Scope
 {
@@ -24,16 +26,27 @@ public:
     };
 
     //checked on cluster -- was unable to find anything regarding mpicxx-TV
+#ifndef MPITV_ENABLED
     enum PControlCodes
     {
-        TRACEEVENT = 8,
-        TRARELEVEL = 6,
-        TRACENODE  = 3,
-        TRACEFILES = 101
+        PC_TRACEEVENT = 8,
+        PC_TRARELEVEL = 6,
+        PC_TRACENODE  = 3,
+        PC_TRACEFILES = 101
     };
+#else
+    enum PControlCodes
+    {
+        PC_TRACEEVENT = TRACEEVENT,
+        PC_TRARELEVEL = TRACELEVEL,
+        PC_TRACENODE  = TRACENODE,
+        PC_TRACEFILES = TRACEFILES
+    };
+#endif
 
     MPI_Trace(unsigned int color);
     ~MPI_Trace();
+    static void Init();
 private:
     unsigned int m_color;
 };
