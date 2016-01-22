@@ -2,10 +2,10 @@
 
 # IBM Load Leveler job control file
 
-# @ job_name = ppch
+# @ job_name = ppch_mpi-tv
 # @ job_type = MPICH
 # @ class = small
-# @ node = 8
+# @ node = 4
 # @ initialdir = /gpfs/home/iu7/stud051
 # @ output = $(initialdir)/$(job_name).$(jobid).stdout
 # @ error = $(initialdir)/$(job_name).$(jobid).stderr
