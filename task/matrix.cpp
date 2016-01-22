@@ -18,7 +18,7 @@ public:
     {
         std::ostringstream oss;
         oss << "node" << nodeid << ".log";
-        m_ofs = new std::ofstream(oss.str().c_str());
+        m_ofs = new std::ofstream(oss.str().c_str(), std::ios_base::app);
     }
 
     ~Logger()
@@ -192,15 +192,7 @@ std::pair<int, int> Matrix::find_max_off_diagonal_mpi_omp()
             log << "[LEFT:" << std::setw(5) << waiting_for << "]" << " probing ..." << std::endl;
 
             MPI::Status status;
-            for (int prb = 1; prb < world_size; prb = (prb + 1) % (world_size - 1) + 1)
-            {
-                if (MPI::COMM_WORLD.Iprobe(prb, MPI_ANY_TAG, status))
-                {
-                    int nodeid = status.Get_source();
-                    if (nodeid != 0)
-                        break;
-                }
-            }
+            MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
 
             int rowid = status.Get_tag();
             int nodeid = status.Get_source();
@@ -225,6 +217,7 @@ std::pair<int, int> Matrix::find_max_off_diagonal_mpi_omp()
     catch (const std::exception& e)
     {
         log << e.what() << std::endl;
+        MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 
     return std::make_pair(imax, jmax);
@@ -244,17 +237,20 @@ void Matrix::find_max_mpi_server(const int cols, const int rows)
         int iter_cnt = (rows - MIN_BATCH_SIZE) % (world_size - 1) + 1;
         log << "node #" << world_rank << " is going to process up to " << iter_cnt << " requests..." << std::endl;
 
-        for (int iter = 0; iter < iter_cnt; ++iter)
+        for (int iter = 0; /*iter < iter_cnt*/; ++iter)
         {
             MPI::Status status;
             MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
             int rowid = status.Get_tag();
             int nodeid = status.Get_source();
+            int sz_to_read = status.Get_count(MPI::DOUBLE);
             int row_sz = cols - rowid - 1;
+
+            assert(sz_to_read == row_sz);
 
             std::vector<value_type> row(row_sz);
             MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
-            log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << std::endl;
+            log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
 
             value_type new_max;
             int new_jmax = find_abs_max(&row[0], (int)row.size(), new_max);
@@ -269,6 +265,7 @@ void Matrix::find_max_mpi_server(const int cols, const int rows)
     catch (const std::exception& e)
     {
         log << e.what() << std::endl;
+        MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 }
 

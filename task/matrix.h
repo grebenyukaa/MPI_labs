@@ -5,6 +5,7 @@
 #include <string>
 
 #define MIN_BATCH_SIZE 5
+#define ABORTION_CODE -1
 
 //#define MATRIX_MUL_PLAIN
 #define MATRIX_MUL_MPI

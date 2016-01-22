@@ -9,5 +9,5 @@ MPI_Scope::MPI_Scope()
 
 MPI_Scope::~MPI_Scope()
 {
-    MPI::Finalize();
+    MPI::COMM_WORLD.Abort(0);
 }
