@@ -17,7 +17,7 @@ class Matrix
 {
 public:
     typedef double value_type;
-    typedef unsigned long long index_type;
+    typedef /*unsigned long long*/int index_type;
 
     Matrix(index_type cols, index_type rows);
     //rotation matrix
