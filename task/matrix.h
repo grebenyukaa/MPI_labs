@@ -6,59 +6,59 @@
 
 #define NTH_PRINT 100
 
-#define MIN_BATCH_SIZE 100
+#define MIN_BATCH_SIZE 50
 #define ABORTION_CODE -1
 
-//#define MATRIX_MUL_PLAIN
-//#define MATRIX_MUL_MPI
-#define MATRIX_MUL_MPI_OMP
+#define COMPUTATION_PLAIN
+//#define COMPUTATION_MPI
+//#define COMPUTATION_MPI_OMP
 
 class Matrix
 {
 public:
     typedef double value_type;
+    typedef unsigned long long index_type;
 
-    Matrix(int cols, int rows);
+    Matrix(index_type cols, index_type rows);
     //rotation matrix
-    Matrix(int cols, int rows, int col, int row, value_type s, value_type c);
+    Matrix(index_type cols, index_type rows, index_type col, index_type row, value_type s, value_type c);
     Matrix(const Matrix& other);
     virtual ~Matrix();
 
     void compute_eigenvalues(const value_type& precision);
-    const double diagonality() const;
+    //const double diagonality() const;
 
-    inline value_type& at(const int& i, const int& j) { return m_data[i * m_rows + j]; }
-    inline const value_type& at(const int& i, const int& j) const { return m_data[i * m_rows + j]; }
+    inline value_type& at(const index_type& i, const index_type& j) { return m_data[i * m_rows + j]; }
+    inline const value_type& at(const index_type& i, const index_type& j) const { return m_data[i * m_rows + j]; }
 
-    inline const int getColCount() const { return m_cols; }
-    inline const int getRowCount() const { return m_rows; }
+    inline const index_type getColCount() const { return m_cols; }
+    inline const index_type getRowCount() const { return m_rows; }
     inline const std::vector<value_type>& getEigenValues() const { return m_eigenvalues; }
 
     friend std::ostream& operator<<(std::ostream& o, const Matrix& m);
 
-    static void find_max_mpi_server(const int cols, const int rows);
+    static void find_max_mpi_server(const index_type cols, const index_type rows);
 private:
     //seemed to be a good idea, but really nothing to parallelize here
-    inline void jacoby_multiply(const int col, const int row) { jacoby_multiply_plain(col, row); }
+    inline void jacoby_multiply(const index_type col, const index_type row) { jacoby_multiply_plain(col, row); }
+    void jacoby_multiply_plain(const index_type col, const index_type row);
 
     //parallelizing max counting
-    inline std::pair<int, int> find_max_off_diagonal()
+    inline std::pair<index_type, index_type> find_max_off_diagonal_norm(value_type& norm)
     {
-        #if   defined(MATRIX_MUL_PLAIN)
-            return find_max_off_diagonal_plain();
-        #elif defined(MATRIX_MUL_MPI) || defined(MATRIX_MUL_MPI_OMP)
-            return find_max_off_diagonal_mpi_omp();
+        #if   defined(COMPUTATION_PLAIN)
+            return find_max_off_diagonal_norm_plain(norm);
+        #elif defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
+            return find_max_off_diagonal_norm_mpi_omp(norm);
         #endif
     }
 
-    void jacoby_multiply_plain(const int col, const int row);
+    std::pair<index_type, index_type> find_max_off_diagonal_norm_plain(value_type& norm);
+    std::pair<index_type, index_type> find_max_off_diagonal_norm_mpi(value_type& norm);
+    std::pair<index_type, index_type> find_max_off_diagonal_norm_mpi_omp(value_type& norm);
 
-    std::pair<int, int> find_max_off_diagonal_plain();
-    std::pair<int, int> find_max_off_diagonal_mpi();
-    std::pair<int, int> find_max_off_diagonal_mpi_omp();
-
-    int m_cols;
-    int m_rows;
+    index_type m_cols;
+    index_type m_rows;
     std::vector<value_type> m_data;
     std::vector<value_type> m_eigenvalues;
 };

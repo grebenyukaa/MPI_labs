@@ -6,7 +6,7 @@ include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 SET(CMAKE_CXX_COMPILER "mpicxx")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 cmake_minimum_required(VERSION 2.8)
 aux_source_directory(. SRC_LIST)
