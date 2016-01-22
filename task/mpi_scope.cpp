@@ -1,6 +1,7 @@
-#include "mpi_scope.h"
 #include <mpi.h>
 #include <cstddef>
+
+#include "mpi_scope.h"
 
 MPI_Scope::MPI_Scope()
 {
