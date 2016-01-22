@@ -1,5 +1,5 @@
-BUILD_DIR = $(realpath ../work)
-SOURCE_FILES = mpi_scope.cpp matrix.cpp main.cpp
+BUILD_DIR = $(realpath ../../work)
+SOURCE_FILES = mpi_trace.cpp mpi_scope.cpp matrix.cpp main.cpp
 
 TRACE_LIB = mpi-trace
 TRACE_LIB_TV = mpi-trace-tv
@@ -12,10 +12,10 @@ CXX_FLAGS_TRACE = $(CXX_FLAGS) -l$(TRACE_LIB)
 CXX_FLAGS_TRACE_TV = $(CXX_FLAGS) -l$(TRACE_LIB_TV)
 
 trace_lib:
-		mpicxx mpi_trace.cpp $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB).so
+		mpicc mpi_trace.c $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB).so
 
 trace_lib-tv:
-		mpicxx-TV mpi_trace.cpp $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB_TV).so
+		mpicc-TV mpi_trace.c $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB_TV).so
 
 mpi: trace_lib
 		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE) -o $(BUILD_DIR)/ppch_mpi
