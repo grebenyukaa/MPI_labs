@@ -1,19 +1,39 @@
-mpi:
-	mpicxx *.cpp *.h -D COMPUTATION_MPI -Wall -fopenmp -lm -o ../work/ppch_mpi
+BUILD_DIR = ../work
+SOURCE_FILES = mpi_scope.cpp matrix.cpp main.cpp
 
-mpi_omp:
-	mpicxx *.cpp *.h -D COMPUTATION_MPI_OMP -Wall -fopenmp -lm -o ../work/ppch_mpi_omp
+TRACE_LIB = mpi-trace
+TRACE_LIB_TV = mpi-trace-tv
 
-plain:
-	mpicxx *.cpp *.h -D COMPUTATION_PLAIN -Wall -fopenmp -lm -o ../work/ppch_plain
+CXX_FLAGS = $(SOURCE_FILES) -Wl,-rpath=$(BUILD_DIR) -L$(BUILD_DIR) -Wall -fopenmp -lm
 
-mpi-tv:
-	mpicxx-TV *.cpp *.h -D COMPUTATION_MPI -Wall -fopenmp -lm -o ../work/ppch_mpi_tv
+CXX_SO_FLAGS = -Wall -Werror -fPIC -shared
 
-all:
-	mpi mpi_omp plain mpi-tv
+CXX_FLAGS_TRACE = $(CXX_FLAGS) -l$(TRACE_LIB)
+CXX_FLAGS_TRACE_TV = $(CXX_FLAGS) -l$(TRACE_LIB_TV)
+
+trace_lib:
+		mpicxx mpi_trace.cpp $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB).so
+
+trace_lib-tv:
+		mpicxx-TV mpi_trace.cpp $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB_TV).so
+
+mpi: trace_lib
+		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE) -o $(BUILD_DIR)/ppch_mpi
+
+mpi_omp: trace_lib
+		mpicxx -D COMPUTATION_MPI_OMP $(CXX_FLAGS_TRACE) -o $(BUILD_DIR)/ppch_mpi_omp
+
+plain: trace_lib
+		mpicxx -D COMPUTATION_PLAIN $(CXX_FLAGS_TRACE) -o $(BUILD_DIR)/ppch_plain
+
+mpi-tv: trace_lib-tv
+		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
+
+all: mpi mpi_omp plain
+
+all-tv: all mpi-tv
 
 clean:
-	@rm -rf ../work/*
+		@rm -rf ../work/*
 
 .PHONY: all
