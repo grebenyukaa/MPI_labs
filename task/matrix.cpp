@@ -223,7 +223,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
 
             MPI::Status status;
             {
-                MPI_Trace scp(MPI_Trace::ClProbe);
+                volatile MPI_Trace scp(MPI_Trace::ClProbe);
                 MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
             }
 
@@ -233,7 +233,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
 
             std::vector<value_type> resp(3);
             {
-                MPI_Trace scp(MPI_Trace::ClRecv);
+                volatile MPI_Trace scp(MPI_Trace::ClRecv);
                 MPI::COMM_WORLD.Recv(&resp[0], 3, MPI::DOUBLE, nodeid, rowid);
             }
             //log << "  done." << std::endl;
@@ -280,7 +280,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
         {
             MPI::Status status;
             {
-                MPI_Trace scp(MPI_Trace::ClProbe);
+                volatile MPI_Trace scp(MPI_Trace::ClProbe);
                 MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
             }
             index_type rowid = status.Get_tag();
@@ -292,7 +292,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 
             std::vector<value_type> row(row_sz);
             {
-                MPI_Trace scp(MPI_Trace::ClRecv);
+                volatile MPI_Trace scp(MPI_Trace::ClRecv);
                 MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
             }
             //log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
@@ -306,7 +306,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             resp[1] = new_max;
             resp[2] = norm_prt;
             {
-                MPI_Trace scp(MPI_Trace::ClSend);
+                volatile MPI_Trace scp(MPI_Trace::ClSend);
                 MPI::COMM_WORLD.Send(&resp[0], 3, MPI::DOUBLE, 0, rowid);
             }
             //log << "[ITER: #" << std::setw(3) << iter << "] " << "sent back answer (row #" << rowid << ")" << std::endl;
