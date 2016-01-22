@@ -4,13 +4,13 @@
 #include <vector>
 #include <string>
 
-#define NTH_PRINT 100
+#define NTH_PRINT 1
 
 #define MIN_BATCH_SIZE 50
 #define ABORTION_CODE -1
 
 //#define COMPUTATION_PLAIN
-#define COMPUTATION_MPI
+//#define COMPUTATION_MPI
 //#define COMPUTATION_MPI_OMP
 
 class Matrix

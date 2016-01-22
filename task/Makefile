@@ -13,11 +13,11 @@ CXX_FLAGS_TRACE = $(CXX_FLAGS) -l$(TRACE_LIB)
 CXX_FLAGS_TRACE_TV = $(CXX_FLAGS) -l$(TRACE_LIB_TV)
 
 trace_lib:
-		mpicc -D MPITV_ENABLED -c mpi_trace.c $(C_A_FLAGS) -o $(BUILD_DIR)/$(TRACE_LIB).o
+		mpicc -c mpi_trace.c $(C_A_FLAGS) -o $(BUILD_DIR)/$(TRACE_LIB).o
 		ar rsc $(BUILD_DIR)/lib$(TRACE_LIB).a $(BUILD_DIR)/$(TRACE_LIB).o
 
 trace_so:
-		mpicc -D MPITV_ENABLED -c mpi_trace.c $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB).so
+		mpicc -c mpi_trace.c $(CXX_SO_FLAGS) -o $(BUILD_DIR)/lib$(TRACE_LIB).so
 
 trace_lib-tv:
 		mpicc-TV -D MPITV_ENABLED -c mpi_trace.c $(C_A_FLAGS) -o $(BUILD_DIR)/$(TRACE_LIB_TV).o
@@ -36,10 +36,13 @@ plain: trace_lib
 		mpicxx -D COMPUTATION_PLAIN $(CXX_FLAGS_TRACE) -o $(BUILD_DIR)/ppch_plain
 
 mpi-so-tv: trace_so-tv
-		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
+		mpicxx-TV -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
 
 mpi-lib-tv: trace_lib-tv
 		mpicxx-TV -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
+
+mpi-tv:
+		mpicxx-TV -D COMPUTATION_MPI -D MPITV_ENABLED mpi_trace.c $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi-tv
 
 all: mpi mpi_omp plain
 

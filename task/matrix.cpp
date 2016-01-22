@@ -90,8 +90,8 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         imax = ijmax.first;
         jmax = ijmax.second;
 
-        //if (iter % NTH_PRINT == 0)
-        //    std::cout << "iteration " << iter++ << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
+        if (iter % NTH_PRINT == 0)
+            std::cout << "iteration " << iter++ << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
         //std::cout << "--" << std::endl;
     }
     std::cout << "iteration " << iter++ << " delta = " << std::abs(cur_norm - old_norm) << std::endl;

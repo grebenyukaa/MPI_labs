@@ -1,5 +1,6 @@
 #include "mpi_scope.h"
 #include <mpi.h>
+#include <cstddef>
 
 MPI_Scope::MPI_Scope()
 {
