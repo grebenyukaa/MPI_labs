@@ -1,8 +1,6 @@
 #ifndef MPI_SCOPE_H
 #define MPI_SCOPE_H
 
-#include "mpi_trace.h"
-
 class MPI_Scope
 {
 public:
