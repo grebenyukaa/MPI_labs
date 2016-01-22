@@ -221,20 +221,23 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
         {
             //log << "[LEFT:" << std::setw(5) << waiting_for << "]" << " probing ..." << std::endl;
 
-            MPI::Status status;
+            MPI_Status status;
+            //MPI::Status status;
             {
                 volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
-                MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
+                MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+                //MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
             }
 
-            index_type rowid = status.Get_tag();
-            index_type nodeid = status.Get_source();
+            index_type rowid = status.MPI_TAG/*status.Get_tag()*/;
+            index_type nodeid = status.MPI_SOURCE/*status.Get_source()*/;
             //log << "[LEFT:" << std::setw(5) << waiting_for << "] retrieving response from " << nodeid << " row #" << rowid << std::endl;
 
             std::vector<value_type> resp(3);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI::COMM_WORLD.Recv(&resp[0], 3, MPI::DOUBLE, nodeid, rowid);
+                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, rowid, MPI_COMM_WORLD, NULL);
+                //MPI::COMM_WORLD.Recv(&resp[0], 3, MPI::DOUBLE, nodeid, rowid);
             }
             //log << "  done." << std::endl;
 
@@ -256,7 +259,8 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     catch (const std::exception& e)
     {
         //log << e.what() << std::endl;
-        MPI::COMM_WORLD.Abort(ABORTION_CODE);
+        MPI_Abort(MPI_COMM_WORLD, ABORTION_CODE);
+        //MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 
     return std::make_pair(imax, jmax);
@@ -278,14 +282,16 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 
         for (index_type iter = 0; /*iter < iter_cnt*/; ++iter)
         {
-            MPI::Status status;
+            MPI_Status status;
+            //MPI::Status status;
             {
                 volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
-                MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
+                MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+                //MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
             }
-            index_type rowid = status.Get_tag();
+            index_type rowid = status.MPI_TAG/*status.Get_tag()*/;
             //index_type nodeid = status.Get_source();
-            index_type sz_to_read = status.Get_count(MPI::DOUBLE);
+            index_type sz_to_read = status._ucount/*status.Get_count(MPI::DOUBLE)*/;
             index_type row_sz = cols - rowid - 1;
 
             assert(sz_to_read == row_sz);
@@ -293,7 +299,8 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             std::vector<value_type> row(row_sz);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
+                MPI_Recv(&row[0], row_sz, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD, NULL);
+                //MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
             }
             //log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
 
@@ -307,7 +314,8 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             resp[2] = norm_prt;
             {
                 volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
-                MPI::COMM_WORLD.Send(&resp[0], 3, MPI::DOUBLE, 0, rowid);
+                MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD);
+                //MPI::COMM_WORLD.Send(&resp[0], 3, MPI::DOUBLE, 0, rowid);
             }
             //log << "[ITER: #" << std::setw(3) << iter << "] " << "sent back answer (row #" << rowid << ")" << std::endl;
         }
@@ -315,7 +323,8 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
     catch (const std::exception& e)
     {
         //log << e.what() << std::endl;
-        MPI::COMM_WORLD.Abort(ABORTION_CODE);
+        MPI_Abort(MPI_COMM_WORLD, ABORTION_CODE);
+        //MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 }
 

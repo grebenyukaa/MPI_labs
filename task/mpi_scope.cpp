@@ -3,12 +3,14 @@
 
 MPI_Scope::MPI_Scope()
 {
-    MPI::Init();
+    //MPI::Init();
+    MPI_Init(NULL, NULL);
     MPI_Trace::Init();
     //MPI::COMM_WORLD.Set_errhandler(MPI::ERRORS_THROW_EXCEPTIONS);
 }
 
 MPI_Scope::~MPI_Scope()
 {
-    MPI::COMM_WORLD.Abort(0);
+    MPI_Abort(MPI_COMM_WORLD, 0);
+    //MPI::COMM_WORLD.Abort(0);
 }

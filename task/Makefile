@@ -39,7 +39,7 @@ mpi-so-tv: trace_so-tv
 		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
 
 mpi-lib-tv: trace_lib-tv
-		mpicxx -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
+		mpicxx-TV -D COMPUTATION_MPI $(CXX_FLAGS_TRACE_TV) -o $(BUILD_DIR)/ppch_mpi-tv
 
 all: mpi mpi_omp plain
 
