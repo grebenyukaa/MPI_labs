@@ -176,8 +176,13 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     index_type imax = 0;
     index_type jmax = 0;
 
-    int world_rank = MPI::COMM_WORLD.Get_rank();
-    int world_size = MPI::COMM_WORLD.Get_size();
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    //int world_rank = MPI::COMM_WORLD.Get_rank();
+    //int world_size = MPI::COMM_WORLD.Get_size();
     //Logger log(world_rank);
     try
     {
@@ -194,7 +199,8 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
                 //log << "sending row #" << h << " to " << dest << std::endl;
                 {
                     MPI_Trace scp(MPI_Trace::ClSend);
-                    MPI::COMM_WORLD.Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI::DOUBLE, dest, h);
+                    MPI_Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI_DOUBLE, dest, h, MPI_COMM_WORLD);
+                    //MPI::COMM_WORLD.Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI::DOUBLE, dest, h);
                 }
                 //log << "  sent." << std::endl;
                 ++waiting_for;
@@ -270,7 +276,9 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 {
     (void)cols;
 
-    int world_rank = MPI::COMM_WORLD.Get_rank();
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    //int world_rank = MPI::COMM_WORLD.Get_rank();
     //int world_size = MPI::COMM_WORLD.Get_size();
     //Logger log(world_rank);
     try

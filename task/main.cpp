@@ -18,7 +18,9 @@ int main()
         MPI_Scope scope; (void)scope;
 
 
-        int world_rank = MPI::COMM_WORLD.Get_rank();
+        int world_rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        //int world_rank = MPI::COMM_WORLD.Get_rank();
         if (world_rank == 0)
 #endif //MPI
         {
@@ -38,14 +40,16 @@ int main()
             std::cout << "Computation start" << std::endl;
             double before, after;
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
-            before = MPI::Wtime();
+            before = MPI_Wtime();
+            //before = MPI::Wtime();
 #elif defined(COMPUTATION_PLAIN)
             before = clock();
 #endif
             m.compute_eigenvalues(precision);
 
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
-            after = MPI::Wtime();
+            after = MPI_Wtime();
+            //after = MPI::Wtime();
 #elif defined(COMPUTATION_PLAIN)
             after = clock();
 #endif
