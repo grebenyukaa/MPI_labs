@@ -11,11 +11,17 @@
 
 #define MIN_BATCH_SIZE 50
 #define ABORTION_CODE 1
-#define MPITV_ABORTION_CODE 2
+#define MPITV_ABORTION_CODE 0
 
-#define COMPUTATION_PLAIN
+//#define COMPUTATION_PLAIN
 //#define COMPUTATION_MPI
 //#define COMPUTATION_MPI_OMP
+
+#if defined(COMPUTATION_PLAIN) && defined(COMPUTATION_MPI) || \
+    defined(COMPUTATION_PLAIN) && defined(COMPUTATION_MPI_OMP) || \
+    defined(COMPUTATION_MPI)   && defined(COMPUTATION_MPI_OMP)
+    #error Multiple COMPUTATION_<TYPE> definitons! Check matrix.h and makefile rule.
+#endif
 
 class Matrix
 {
