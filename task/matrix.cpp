@@ -77,7 +77,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
     std::pair<index_type, index_type> ijmax = find_max_off_diagonal_norm(cur_norm);
     index_type imax = ijmax.first;
     index_type jmax = ijmax.second;
-    value_type old_norm = cur_norm + 2 * precision;
+    value_type old_norm = 0;
 
     size_t iter;
     for (iter = 0; std::abs(cur_norm - old_norm) >= precision; ++iter)
@@ -92,7 +92,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         jmax = ijmax.second;
 
         //if (iter % NTH_PRINT == 0)
-        //    std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
+            std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
         //std::cout << "--" << std::endl;
 
 #ifdef MPITV_ABORT_AFTER
