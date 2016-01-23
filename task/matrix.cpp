@@ -199,7 +199,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
                 index_type dest = wr % (world_size - 1) + 1;
                 //log "sending row #" << h << " to " << dest << std::endl;
                 {
-                    MPI_Trace scp(MPI_Trace::ClSend);
+                    volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
                     MPI_Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI_DOUBLE, dest, h, MPI_COMM_WORLD);
                     //MPI::COMM_WORLD.Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI::DOUBLE, dest, h);
                 }
@@ -231,7 +231,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
             MPI_Status status;
             //MPI::Status status;
             {
-                volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
+                //volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
                 MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
                 //MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
             }
@@ -298,7 +298,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             MPI_Status status;
             //MPI::Status status;
             {
-                volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
+                //volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
                 MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
                 //MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
             }
