@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <cstdlib>
 
 #include <omp.h>
 
@@ -93,6 +94,16 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         //if (iter % NTH_PRINT == 0)
         //    std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
         //std::cout << "--" << std::endl;
+
+#ifdef MPITV_ABORT_AFTER
+        if (iter == MPITV_ABORT_AFTER)
+        {
+            std::cout << "aborting with code " << MPITV_ABORTION_CODE << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, MPITV_ABORTION_CODE);
+            std::cout << "exiting..." << std::endl;
+            exit(MPITV_ABORTION_CODE);
+        }
+#endif
     }
     std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
 

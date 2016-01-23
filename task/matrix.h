@@ -6,8 +6,12 @@
 
 #define NTH_PRINT 100
 
+//number of iterations to abort after(for the sake of trace size)
+//#define MPITV_ABORT_AFTER 10000
+
 #define MIN_BATCH_SIZE 50
-#define ABORTION_CODE -1
+#define ABORTION_CODE 1
+#define MPITV_ABORTION_CODE 2
 
 //#define COMPUTATION_PLAIN
 //#define COMPUTATION_MPI

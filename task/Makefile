@@ -13,7 +13,7 @@ plain:
 		mpicxx -D COMPUTATION_PLAIN $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_plain
 
 mpi-tv:
-		mpicxx-TV -D COMPUTATION_MPI -D MPITV_ENABLED $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi-tv
+		mpicxx-TV -D"MPITV_ABORT_AFTER=100" -D COMPUTATION_MPI -D MPITV_ENABLED $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi-tv
 
 all: mpi mpi_omp plain
 
