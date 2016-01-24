@@ -24,7 +24,7 @@ int main()
         if (world_rank == 0)
 #endif //MPI
         {
-            Matrix m(msize, msize);
+            Matrix m(msize);
             double d = msize;
             for (Matrix::index_type i = 0; i < m.getRowCount(); ++i)
             {
@@ -36,7 +36,6 @@ int main()
                 }
             }
             std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
-            //std::cout << m << std::endl;
             std::cout << "Computation start" << std::endl;
             double before, after;
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
@@ -75,8 +74,6 @@ int main()
             Matrix::find_max_mpi_server(msize, msize);
         }
 #endif //MPI
-
-        //getchar();
     }
 
     return 0;

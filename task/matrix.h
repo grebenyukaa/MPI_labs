@@ -13,7 +13,7 @@
 #define ABORTION_CODE 1
 #define MPITV_ABORTION_CODE 0
 
-//#define COMPUTATION_PLAIN
+#define COMPUTATION_PLAIN
 //#define COMPUTATION_MPI
 //#define COMPUTATION_MPI_OMP
 
@@ -29,17 +29,16 @@ public:
     typedef double value_type;
     typedef /*unsigned long long*/int index_type;
 
-    Matrix(index_type cols, index_type rows);
+    Matrix(index_type size);
     //rotation matrix
     Matrix(index_type cols, index_type rows, index_type col, index_type row, value_type s, value_type c);
     Matrix(const Matrix& other);
     virtual ~Matrix();
 
     void compute_eigenvalues(const value_type& precision);
-    //const double diagonality() const;
 
-    inline value_type& at(const index_type& i, const index_type& j) { return m_data[i * m_rows + j]; }
-    inline const value_type& at(const index_type& i, const index_type& j) const { return m_data[i * m_rows + j]; }
+    value_type& at(const index_type& i, const index_type& j);
+    const value_type& at(const index_type& i, const index_type& j) const;
 
     inline const index_type getColCount() const { return m_cols; }
     inline const index_type getRowCount() const { return m_rows; }

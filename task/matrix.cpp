@@ -4,8 +4,6 @@
 #include <limits>
 #include <cmath>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <iomanip>
 #include <cstdlib>
 
@@ -13,42 +11,19 @@
 
 #include "matrix.h"
 #include "mpi_scope.h"
-
-class Logger
-{
-public:
-    Logger(const Matrix::index_type nodeid)
-    {
-        std::ostringstream oss;
-        oss << "node" << nodeid << ".log";
-        m_ofs = new std::ofstream(oss.str().c_str(), std::ios_base::app);
-    }
-
-    ~Logger()
-    {
-        m_ofs->close();
-        delete m_ofs;
-    }
-
-    template<class T>
-    std::ofstream& operator<<(const T& data)
-    {
-        *m_ofs << data;
-        return *m_ofs;
-    }
-private:
-    std::ofstream* m_ofs;
-};
+#include "utils.h"
 
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Matrix::Matrix(index_type cols, index_type rows)
+//
+
+Matrix::Matrix(index_type size)
     :
-    m_cols(cols),
-    m_rows(rows),
-    m_data(rows * cols),
+    m_cols(size),
+    m_rows(size),
+    m_data(APUtils::sum(size - 1)),
     m_eigenvalues(rows)
 {}
 
@@ -62,14 +37,31 @@ Matrix::Matrix(const Matrix &other)
 Matrix::~Matrix()
 {}
 
-/*const double Matrix::diagonality() const
+value_type& Matrix::at(const index_type& i, const index_type& j)
 {
-    value_type norm = 0;
-    for (index_type i = 0; i < m_rows; ++i)
-        for (index_type j = i + 1; j < m_cols; ++j)
-            norm += std::pow(at(i, j), 2);
-    return norm;
-}*/
+    assert(i == j);
+    return /*(i == j) ? m_eigenvalues[i] : */m_data[i * m_rows + j];
+}
+
+const value_type& Matrix::at(const index_type& i, const index_type& j) const
+{
+    assert(i == j);
+    return /*(i == j) ? m_eigenvalues[i] : */m_data[i * m_rows + j];
+}
+
+std::ostream& operator<<(std::ostream& o, const Matrix& m)
+{
+    for (Matrix::index_type i = 0; i < m.m_rows; ++i)
+    {
+        o << std::setw(20 * (i + 1)) << m.m_eigenvalues[i];
+        for (Matrix::index_type j = i + 1; j < m.m_cols; ++j)
+        {
+            o << std::setw(20) << m.at(i, j);
+        }
+        o << std::endl;
+    }
+    return o;
+}
 
 void Matrix::compute_eigenvalues(const value_type& precision)
 {
@@ -108,22 +100,11 @@ void Matrix::compute_eigenvalues(const value_type& precision)
     }
     std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
 
-    for (index_type i = 0; i < m_rows; ++i)
-        m_eigenvalues[i] = at(i, i);
+    //for (index_type i = 0; i < m_rows; ++i)
+    //    m_eigenvalues[i] = at(i, i);
 }
 
-std::ostream& operator<<(std::ostream& o, const Matrix& m)
-{
-    for (Matrix::index_type i = 0; i < m.m_rows; ++i)
-    {
-        for (Matrix::index_type j = 0; j < m.m_cols; ++j)
-        {
-            o << std::setw(20) << m.at(i, j);
-        }
-        o << std::endl;
-    }
-    return o;
-}
+// plain
 
 std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_norm_plain(value_type& norm)
 {
@@ -144,6 +125,45 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
         }
     return std::make_pair(imax, jmax);
 }
+
+void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
+{
+    using namespace std;
+
+    assert(k != l);
+    if (abs(at(k, l)) < 1e-12) return;
+
+    value_type beta = (at(l, l) - at(k, k)) / at(k, l) / 2;
+    value_type t = sgn(beta) / (abs(beta) + sqrt(beta*beta + 1));
+    value_type c = 1 / sqrt(t*t + 1);
+    value_type s = c*t;
+    value_type ro = s / (1 + c);
+
+    //value_type kk = at(k, k) - t * at(k, l);
+    //value_type ll = at(l, l) + t * at(k, l);
+    m_eigenvalues[k] -= t * at(k, l);
+    m_eigenvalues[l] += t * at(k, l);
+
+#if defined(COMPUTATION_MPI_OMP)
+    #pragma omp parallel for
+#endif
+    for (index_type h = 0; h < m_cols; ++h)
+    {
+        if (h == k || h == l) continue;
+        value_type hk = at(h, k) - s*(at(h, l) + ro*at(h, k));
+        value_type hl = at(h, l) + s*(at(h, k) - ro*at(h, l));
+        at(h, k) = hk;
+        at(k, h) = hk;
+        at(h, l) = hl;
+        at(l, h) = hl;
+    }
+    //at(k, k) = kk;
+    //at(l, l) = ll;
+    at(k, l) = 0;
+    at(l, k) = 0;
+}
+
+//mpi, mpi_omp
 
 template<class T>
 Matrix::index_type find_abs_max_norm(const T* from, const size_t count, T& max_val, T& norm_part)
@@ -356,39 +376,4 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
         MPI_Abort(MPI_COMM_WORLD, ABORTION_CODE);
         //MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
-}
-
-void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
-{
-    using namespace std;
-
-    assert(m_cols == m_rows);
-    if (abs(at(k, l)) < 1e-12) return;
-
-    value_type beta = (at(l, l) - at(k, k)) / at(k, l) / 2;
-    value_type t = sgn(beta) / (abs(beta) + sqrt(beta*beta + 1));
-    value_type c = 1 / sqrt(t*t + 1);
-    value_type s = c*t;
-    value_type ro = s / (1 + c);
-
-    value_type kk = at(k, k) - t * at(k, l);
-    value_type ll = at(l, l) + t * at(k, l);
-
-#if defined(COMPUTATION_MPI_OMP)
-    #pragma omp parallel for
-#endif
-    for (index_type h = 0; h < m_cols; ++h)
-    {
-        if (h == k || h == l) continue;
-        value_type hk = at(h, k) - s*(at(h, l) + ro*at(h, k));
-        value_type hl = at(h, l) + s*(at(h, k) - ro*at(h, l));
-        at(h, k) = hk;
-        at(k, h) = hk;
-        at(h, l) = hl;
-        at(l, h) = hl;
-    }
-    at(k, k) = kk;
-    at(l, l) = ll;
-    at(k, l) = 0;
-    at(l, k) = 0;
 }
