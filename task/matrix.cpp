@@ -84,6 +84,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
     index_type imax = ijmax.first;
     index_type jmax = ijmax.second;
     value_type old_norm = 0;
+    std::cout << "iteration " << -1 << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
 
     size_t iter;
     for (iter = 0; std::abs(cur_norm - old_norm) >= precision; ++iter)
@@ -121,9 +122,10 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::flat_idx_to_pair(index
 {
     int i = 0;
     int j = 0;
-    int rowsize = m_cols;
-    for (; (idx >= rowsize) && (rowsize > 0); idx -= --rowsize)
+    int rowsize = m_cols - 1;
+    for (; (idx >= rowsize); idx -= rowsize--)
         ++i;
+    assert(idx >= 0);
     j = i + idx + 1;
     return std::make_pair(i, j);
 }
@@ -161,8 +163,8 @@ void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
     value_type s = c*t;
     value_type ro = s / (1 + c);
 
-    m_eigenvalues[k] -= t * kl;
-    m_eigenvalues[l] += t * kl;
+    at_diag(k) -= t * kl;
+    at_diag(l) += t * kl;
 
 #if defined(COMPUTATION_MPI_OMP)
     #pragma omp parallel for
@@ -170,10 +172,10 @@ void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
     for (index_type h = 0; h < m_rows; ++h)
     {
         if (h == l || h == k) continue;
-        std::cout << "(" << h << ", " << k << ")" << std::endl;
-        std::cout << "(" << h << ", " << l << ")" << std::endl;
-        value_type hk = at(k, h) - s*(at(l, h) + ro*at(k, h));
-        value_type hl = at(l, h) + s*(at(k, h) - ro*at(l, h));
+        //std::cout << "(" << h << ", " << k << ")" << std::endl;
+        //std::cout << "(" << h << ", " << l << ")" << std::endl;
+        value_type hk = at(h, k) - s*(at(h, l) + ro*at(h, k));
+        value_type hl = at(h, l) + s*(at(h, k) - ro*at(h, l));
         //at(h, k) = hk;
         at(k, h) = hk;
         //at(h, l) = hl;
@@ -194,26 +196,27 @@ Matrix::index_type find_abs_max_norm(const T* from, const size_t count, T& max_v
     max_val = 0;
     Matrix::index_type imax = 0;
     T abs_val = 0;
+    size_t i;
 
-//#if defined(COMPUTATION_MPI_OMP)
-//    #pragma omp parallel for private(abs_val)
-//#endif
-    for (size_t i = 0; i < count; ++i)
+#if defined(COMPUTATION_MPI_OMP)
+    #pragma omp parallel for private(abs_val, i)
+#endif
+    for (i = 0; i < count; ++i)
     {
         abs_val = std::abs(from[i]);
-//#if defined(COMPUTATION_MPI_OMP)
-//        #pragma omp atomic update
-//#endif
+#if defined(COMPUTATION_MPI_OMP)
+        #pragma omp atomic update
+#endif
         norm_part += abs_val * abs_val;
         if (max_val < abs_val)
         {
-//#if defined(COMPUTATION_MPI_OMP)
-//            #pragma omp atomic write
-//#endif
+#if defined(COMPUTATION_MPI_OMP)
+            #pragma omp atomic write
+#endif
             max_val = abs_val;
-//#if defined(COMPUTATION_MPI_OMP)
-//            #pragma omp atomic write
-//#endif
+#if defined(COMPUTATION_MPI_OMP)
+            #pragma omp atomic write
+#endif
             imax = i;
         }
     }
@@ -239,18 +242,20 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
         assert(world_rank == 0 && "Should be executed in parent node!");
         //log "world_size = " << world_size << std::endl;
 
-        size_t batch_sz = (size_t)std::ceil(m_data.size() / (double)world_size);
-        for (int node_id = 0; node_id < world_size; ++node_id)
+        size_t batch_sz = m_data.size() % (world_size - 1) == 0 ? m_data.size() / (world_size - 1) : m_data.size() / (world_size - 1) + 1;
+        for (int node_id = 1; node_id < world_size; ++node_id)
         {
             {
                 volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
-                MPI_Send(&m_data[node_id * batch_sz], std::min(batch_sz, m_data.size() - node_id * batch_sz), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
+                Matrix::index_type offset = (node_id - 1) * batch_sz;
+                //std::cout << "sending: offset = " << offset << " size = " << std::min(batch_sz, m_data.size() - offset) << " to " << node_id << std::endl;
+                MPI_Send(&m_data[offset], std::min(batch_sz, m_data.size() - offset), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
             }
         }
 
         //log "wating for reponses..." << std::endl;
 
-        for (int node_id = 0; node_id < world_size; ++node_id)
+        for (int node_id = 1; node_id < world_size; ++node_id)
         {
             //log "[LEFT:" << std::setw(5) << waiting_for << "]" << " probing ..." << std::endl;
 
@@ -267,7 +272,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
             }
             //log "  done." << std::endl;
 
-            index_type new_imax = (index_type)resp[0];
+            index_type new_imax = (nodeid - 1) * batch_sz + (index_type)resp[0];
             value_type new_max = resp[1];
             value_type norm_prt = resp[2];
 

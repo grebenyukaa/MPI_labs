@@ -32,12 +32,12 @@ int main()
                 m.at_diag(i) = i + 1 + d;
                 for (Matrix::index_type j = i + 1; j < m.getRowCount(); ++j)
                 {
-                    m.at(i, j) = j + 1 + d;
+                    m.at(i, j) = i + 1 + d;
                 }
             }
             std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
             std::cout << "Computation start" << std::endl;
-            std::cout << m << std::endl;
+            //std::cout << m << std::endl;
 
             double before, after;
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
