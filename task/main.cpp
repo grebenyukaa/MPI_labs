@@ -55,11 +55,13 @@ int main()
             after = clock();
 #endif
 
+            /*
             std::cout << "Computed eigenvalues:" << std::endl;
             const std::vector<double>& evs = m.getEigenValues();
             for (size_t i = 0; i < evs.size(); ++i)
                 std::cout << std::setw(10) << evs[i];
             std::cout << std::endl;
+            */
 
 
             std::cout << std::endl;

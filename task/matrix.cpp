@@ -84,14 +84,14 @@ void Matrix::compute_eigenvalues(const value_type& precision)
     index_type imax = ijmax.first;
     index_type jmax = ijmax.second;
     value_type old_norm = 0;
-    std::cout << "iteration " << -1 << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
+    //std::cout << "iteration " << -1 << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
 
     size_t iter;
     for (iter = 0; std::abs(cur_norm - old_norm) >= precision; ++iter)
     {
-        std::cout << *this << std::endl;
+        //std::cout << *this << std::endl;
         jacoby_multiply(jmax, imax);
-        std::cout << *this << std::endl;
+        //std::cout << *this << std::endl;
 
         old_norm = cur_norm;
         ijmax = find_max_off_diagonal_norm(cur_norm);
