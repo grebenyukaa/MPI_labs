@@ -13,7 +13,7 @@
 #define MPITV_ABORTION_CODE 0
 
 //#define COMPUTATION_PLAIN
-//#define COMPUTATION_MPI
+#define COMPUTATION_MPI
 //#define COMPUTATION_MPI_OMP
 
 #if defined(COMPUTATION_PLAIN) && defined(COMPUTATION_MPI) || \

@@ -99,8 +99,8 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         jmax = ijmax.second;
 
         //if (iter % NTH_PRINT == 0)
-            std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
-        std::cout << "--" << std::endl;
+        //    std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
+        //std::cout << "--" << std::endl;
 
 #ifdef MPITV_ABORT_AFTER
         if (iter == MPITV_ABORT_AFTER)
