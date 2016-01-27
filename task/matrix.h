@@ -9,7 +9,6 @@
 //number of iterations to abort after(for the sake of trace size)
 //#define MPITV_ABORT_AFTER 10000
 
-#define MIN_BATCH_SIZE 50
 #define ABORTION_CODE 1
 #define MPITV_ABORTION_CODE 0
 
@@ -37,8 +36,16 @@ public:
 
     void compute_eigenvalues(const value_type& precision);
 
-    value_type& at(const index_type& i, const index_type& j);
-    const value_type& at(const index_type& i, const index_type& j) const;
+    inline value_type& at(const std::pair<index_type, index_type>& ij) { return at(ij.first, ij.second); }
+    inline const value_type& at(const std::pair<index_type, index_type>& ij) const { return at(ij.first, ij.second); }
+
+    value_type& at(index_type i, index_type j);
+    const value_type& at(index_type i, index_type j) const;
+
+    value_type& at_diag(index_type i);
+    const value_type& at_diag(index_type i) const;
+
+    std::pair<index_type, index_type> flat_idx_to_pair(index_type fi);
 
     inline const index_type getColCount() const { return m_cols; }
     inline const index_type getRowCount() const { return m_rows; }
@@ -64,7 +71,7 @@ private:
 
     std::pair<index_type, index_type> find_max_off_diagonal_norm_plain(value_type& norm);
     std::pair<index_type, index_type> find_max_off_diagonal_norm_mpi(value_type& norm);
-    std::pair<index_type, index_type> find_max_off_diagonal_norm_mpi_omp(value_type& norm);
+    std::pair<index_type, index_type> find_max_off_diagonal_norm_mpi_omp(value_type& norm);    
 
     index_type m_cols;
     index_type m_rows;

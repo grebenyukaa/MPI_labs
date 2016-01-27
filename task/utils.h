@@ -2,6 +2,8 @@
 #define UTILS_H
 
 #include <fstream>
+#include <assert.h>
+#include "matrix.h"
 
 class Logger
 {
@@ -21,14 +23,14 @@ private:
 
 //
 
-//AP - arithmetic progression
-template<class T>
 class APUtils
 {
-    static T sum(const T count, const T from = 0, const T step = 1)
+public:
+    template<class T>
+    static T sum(const T from, const T to, const T step = 1)
     {
-        return (2*from + step*(count - 1)) * count / 2;
+        assert(to >= from);
+        return ((to + from) * ((to - from) / step + 1) / step) / 2;
     }
 };
-
 #endif //UTILS_H

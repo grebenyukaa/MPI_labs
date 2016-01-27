@@ -23,8 +23,8 @@ Matrix::Matrix(index_type size)
     :
     m_cols(size),
     m_rows(size),
-    m_data(APUtils::sum(size - 1)),
-    m_eigenvalues(rows)
+    m_data(APUtils::sum(1, size)),
+    m_eigenvalues(size)
 {}
 
 Matrix::Matrix(const Matrix &other)
@@ -37,16 +37,30 @@ Matrix::Matrix(const Matrix &other)
 Matrix::~Matrix()
 {}
 
-value_type& Matrix::at(const index_type& i, const index_type& j)
+Matrix::value_type& Matrix::at(index_type i, index_type j)
 {
-    assert(i == j);
-    return /*(i == j) ? m_eigenvalues[i] : */m_data[i * m_rows + j];
+    assert(j != i);
+    if (j < i) std::swap(i, j);
+    index_type sum = APUtils::sum(m_rows - 1 - i, m_rows - 1);
+    return m_data[sum - (m_rows - 1) + j - 1];
 }
 
-const value_type& Matrix::at(const index_type& i, const index_type& j) const
+const Matrix::value_type& Matrix::at(index_type i, index_type j) const
 {
-    assert(i == j);
-    return /*(i == j) ? m_eigenvalues[i] : */m_data[i * m_rows + j];
+    assert(j != i);
+    if (j < i) std::swap(i, j);
+    index_type sum = APUtils::sum(m_rows - 1 - i, m_rows - 1);
+    return m_data[sum - (m_rows - 1) + j - 1];
+}
+
+Matrix::value_type& Matrix::at_diag(index_type i)
+{
+    return m_eigenvalues[i];
+}
+
+const Matrix::value_type& Matrix::at_diag(index_type i) const
+{
+    return m_eigenvalues[i];
 }
 
 std::ostream& operator<<(std::ostream& o, const Matrix& m)
@@ -74,9 +88,9 @@ void Matrix::compute_eigenvalues(const value_type& precision)
     size_t iter;
     for (iter = 0; std::abs(cur_norm - old_norm) >= precision; ++iter)
     {
-        //std::cout << *this << std::endl;
+        std::cout << *this << std::endl;
         jacoby_multiply(jmax, imax);
-        //std::cout << *this << std::endl;
+        std::cout << *this << std::endl;
 
         old_norm = cur_norm;
         ijmax = find_max_off_diagonal_norm(cur_norm);
@@ -84,8 +98,8 @@ void Matrix::compute_eigenvalues(const value_type& precision)
         jmax = ijmax.second;
 
         //if (iter % NTH_PRINT == 0)
-        //    std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
-        //std::cout << "--" << std::endl;
+            std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << " max at (" << imax << ", " << jmax << ") = " << std::setw(20) << at(imax, jmax) << std::endl;
+        std::cout << "--" << std::endl;
 
 #ifdef MPITV_ABORT_AFTER
         if (iter == MPITV_ABORT_AFTER)
@@ -99,9 +113,19 @@ void Matrix::compute_eigenvalues(const value_type& precision)
 #endif
     }
     std::cout << "iteration " << iter << " delta = " << std::abs(cur_norm - old_norm) << std::endl;
+}
 
-    //for (index_type i = 0; i < m_rows; ++i)
-    //    m_eigenvalues[i] = at(i, i);
+//
+
+std::pair<Matrix::index_type, Matrix::index_type> Matrix::flat_idx_to_pair(index_type idx)
+{
+    int i = 0;
+    int j = 0;
+    int rowsize = m_cols;
+    for (; (idx >= rowsize) && (rowsize > 0); idx -= --rowsize)
+        ++i;
+    j = i + idx + 1;
+    return std::make_pair(i, j);
 }
 
 // plain
@@ -109,21 +133,18 @@ void Matrix::compute_eigenvalues(const value_type& precision)
 std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_norm_plain(value_type& norm)
 {
     index_type imax = 0;
-    index_type jmax = 0;
     value_type max = 0;
-    for (index_type i = 0; i < m_rows; ++i)
-        for (index_type j = i + 1; j < m_cols; ++j)
+    for (size_t i = 0; i < m_data.size(); ++i)
+    {
+        value_type absv = std::abs(m_data[i]);
+        norm += absv * absv;
+        if (max < absv)
         {
-            value_type absij = std::abs(at(i, j));
-            norm += absij * absij;
-            if (max < absij)
-            {
-                max = absij;
-                imax = i;
-                jmax = j;
-            }
+            max = absv;
+            imax = i;
         }
-    return std::make_pair(imax, jmax);
+    }
+    return flat_idx_to_pair(imax);
 }
 
 void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
@@ -131,36 +152,35 @@ void Matrix::jacoby_multiply_plain(const index_type l, const index_type k)
     using namespace std;
 
     assert(k != l);
-    if (abs(at(k, l)) < 1e-12) return;
+    value_type kl = at(k, l);
+    if (abs(kl) < 1e-12) return;
 
-    value_type beta = (at(l, l) - at(k, k)) / at(k, l) / 2;
+    value_type beta = (at_diag(l) - at_diag(k)) / kl / 2;
     value_type t = sgn(beta) / (abs(beta) + sqrt(beta*beta + 1));
     value_type c = 1 / sqrt(t*t + 1);
     value_type s = c*t;
     value_type ro = s / (1 + c);
 
-    //value_type kk = at(k, k) - t * at(k, l);
-    //value_type ll = at(l, l) + t * at(k, l);
-    m_eigenvalues[k] -= t * at(k, l);
-    m_eigenvalues[l] += t * at(k, l);
+    m_eigenvalues[k] -= t * kl;
+    m_eigenvalues[l] += t * kl;
 
 #if defined(COMPUTATION_MPI_OMP)
     #pragma omp parallel for
 #endif
-    for (index_type h = 0; h < m_cols; ++h)
+    for (index_type h = 0; h < m_rows; ++h)
     {
-        if (h == k || h == l) continue;
-        value_type hk = at(h, k) - s*(at(h, l) + ro*at(h, k));
-        value_type hl = at(h, l) + s*(at(h, k) - ro*at(h, l));
-        at(h, k) = hk;
+        if (h == l || h == k) continue;
+        std::cout << "(" << h << ", " << k << ")" << std::endl;
+        std::cout << "(" << h << ", " << l << ")" << std::endl;
+        value_type hk = at(k, h) - s*(at(l, h) + ro*at(k, h));
+        value_type hl = at(l, h) + s*(at(k, h) - ro*at(l, h));
+        //at(h, k) = hk;
         at(k, h) = hk;
-        at(h, l) = hl;
+        //at(h, l) = hl;
         at(l, h) = hl;
     }
-    //at(k, k) = kk;
-    //at(l, l) = ll;
     at(k, l) = 0;
-    at(l, k) = 0;
+    //at(l, k) = 0;
 }
 
 //mpi, mpi_omp
@@ -206,15 +226,12 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     norm = 0;
     value_type max = 0;
     index_type imax = 0;
-    index_type jmax = 0;
 
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    //int world_rank = MPI::COMM_WORLD.Get_rank();
-    //int world_size = MPI::COMM_WORLD.Get_size();
     
     //Logger log(world_rank);
     try
@@ -222,73 +239,42 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
         assert(world_rank == 0 && "Should be executed in parent node!");
         //log "world_size = " << world_size << std::endl;
 
-        index_type waiting_for = 0;
-        for (index_type h = 0, wr = 0; h < m_rows; ++h, ++wr)
+        size_t batch_sz = (size_t)std::ceil(m_data.size() / (double)world_size);
+        for (int node_id = 0; node_id < world_size; ++node_id)
         {
-            index_type row_sz = m_cols - h - 1;
-            if (row_sz >= MIN_BATCH_SIZE)
             {
-                index_type dest = wr % (world_size - 1) + 1;
-                //log "sending row #" << h << " to " << dest << std::endl;
-                {
-                    volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
-                    MPI_Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI_DOUBLE, dest, h, MPI_COMM_WORLD);
-                    //MPI::COMM_WORLD.Send(&m_data[h * m_rows + h + 1], m_cols - h - 1, MPI::DOUBLE, dest, h);
-                }
-                //log "  sent." << std::endl;
-                ++waiting_for;
-            }
-            else
-            {
-                value_type norm_prt;
-                value_type new_max;
-                index_type new_jmax = find_abs_max_norm(&m_data[h * m_rows + h + 1], row_sz, new_max, norm_prt);
-                norm += norm_prt;
-                if (max < new_max)
-                {
-                    imax = h;
-                    jmax = new_jmax + h + 1;
-                    max = new_max;
-                }
-                //log "not sent row #" << h << ": size too small" << std::endl;
+                volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
+                MPI_Send(&m_data[node_id * batch_sz], std::min(batch_sz, m_data.size() - node_id * batch_sz), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
             }
         }
 
         //log "wating for reponses..." << std::endl;
 
-        for (; waiting_for > 0; --waiting_for)
+        for (int node_id = 0; node_id < world_size; ++node_id)
         {
             //log "[LEFT:" << std::setw(5) << waiting_for << "]" << " probing ..." << std::endl;
 
             MPI_Status status;
-            //MPI::Status status;
-            {
-                //volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
-                MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-                //MPI::COMM_WORLD.Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, status);
-            }
-
-            index_type rowid = status.MPI_TAG/*status.Get_tag()*/;
-            index_type nodeid = status.MPI_SOURCE/*status.Get_source()*/;
+            MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            index_type nodeid = status.MPI_SOURCE;
+            index_type tag = status.MPI_TAG;
             //log "[LEFT:" << std::setw(5) << waiting_for << "] retrieving response from " << nodeid << " row #" << rowid << std::endl;
 
             std::vector<value_type> resp(3);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, rowid, MPI_COMM_WORLD, &status);
-                //MPI::COMM_WORLD.Recv(&resp[0], 3, MPI::DOUBLE, nodeid, rowid);
+                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, tag, MPI_COMM_WORLD, &status);
             }
             //log "  done." << std::endl;
 
-            index_type new_jmax = (index_type)resp[0];
+            index_type new_imax = (index_type)resp[0];
             value_type new_max = resp[1];
             value_type norm_prt = resp[2];
 
             norm += norm_prt;
             if (max < new_max)
             {
-                imax = rowid;
-                jmax = new_jmax + rowid + 1;
+                imax = new_imax;
                 max = new_max;
             }
         }
@@ -299,10 +285,9 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     {
         //log e.what() << std::endl;
         MPI_Abort(MPI_COMM_WORLD, ABORTION_CODE);
-        //MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 
-    return std::make_pair(imax, jmax);
+    return flat_idx_to_pair(imax);
 }
 
 void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
@@ -314,8 +299,6 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    //int world_rank = MPI::COMM_WORLD.Get_rank();
-    //int world_size = MPI::COMM_WORLD.Get_size();
     
     //Logger log(world_rank);
     try
@@ -328,35 +311,22 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
         for (index_type iter = 0; /*iter < iter_cnt*/; ++iter)
         {
             MPI_Status status;
-            //MPI::Status status;
-            {
-                //volatile MPI_Trace scp(MPI_Trace::ClProbe); (void)scp;
-                MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-                //MPI::COMM_WORLD.Probe(0, MPI_ANY_TAG, status);
-            }
-            index_type rowid = status.MPI_TAG/*status.Get_tag()*/;
-            //index_type nodeid = status.MPI_SOURCE/*status.Get_source()*/;
+            MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            index_type tag = status.MPI_TAG;
 
-            int sz_to_read_;
-            MPI_Get_count(&status, MPI_DOUBLE, &sz_to_read_);
-            index_type sz_to_read = (index_type)sz_to_read_;
-            //index_type sz_to_read = status.Get_count(MPI::DOUBLE);
+            index_type sz_to_read;
+            MPI_Get_count(&status, MPI_DOUBLE, &sz_to_read);
 
-            index_type row_sz = cols - rowid - 1;
-
-            assert(sz_to_read == row_sz);
-
-            std::vector<value_type> row(row_sz);
+            std::vector<value_type> data(sz_to_read);
             {
                 volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
-                MPI_Recv(&row[0], row_sz, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD, &status);
-                //MPI::COMM_WORLD.Recv(&row[0], row_sz, MPI::DOUBLE, 0, rowid);
+                MPI_Recv(&data[0], sz_to_read, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD, &status);
             }
             //log "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
 
             value_type new_max;
             value_type norm_prt;
-            index_type new_jmax = find_abs_max_norm(&row[0], (index_type)row.size(), new_max, norm_prt);
+            index_type new_jmax = find_abs_max_norm(&data[0], (index_type)data.size(), new_max, norm_prt);
 
             std::vector<value_type> resp(3);
             resp[0] = new_jmax;
@@ -364,8 +334,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             resp[2] = norm_prt;
             {
                 volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
-                MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, rowid, MPI_COMM_WORLD);
-                //MPI::COMM_WORLD.Send(&resp[0], 3, MPI::DOUBLE, 0, rowid);
+                MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
             }
             //log "[ITER: #" << std::setw(3) << iter << "] " << "sent back answer (row #" << rowid << ")" << std::endl;
         }
@@ -374,6 +343,5 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
     {
         //log e.what() << std::endl;
         MPI_Abort(MPI_COMM_WORLD, ABORTION_CODE);
-        //MPI::COMM_WORLD.Abort(ABORTION_CODE);
     }
 }
