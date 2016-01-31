@@ -37,10 +37,10 @@ MPI_Trace::~MPI_Trace()
 void MPI_Trace::Init(const int world_rank)
 {
     //std::cout << "MPI_TRACE init" << std::endl;
-    //std::ostringstream oss;
-    //oss << m_trace_file_name << "." << world_rank;
+    std::ostringstream oss;
+    oss << m_trace_file_name << "." << world_rank;
 
-    MPI_Pcontrol(MPI_TRACEFILES, NULL, m_trace_file_name.c_str(), 0);
+    MPI_Pcontrol(MPI_TRACEFILES, NULL, oss.str().c_str(), 0);
     MPI_Pcontrol(MPI_TRACELEVEL, 1, 1, 1);
     MPI_Pcontrol(MPI_TRACENODE, 1000000, 1, 1);
     //std::cout << "  done" << std::endl;

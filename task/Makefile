@@ -1,5 +1,5 @@
 BUILD_DIR = $(realpath ../../work)
-SOURCE_FILES = mpi_trace.cpp mpi_scope.cpp matrix.cpp main.cpp
+SOURCE_FILES = utils.cpp mpi_trace.cpp mpi_scope.cpp matrix.cpp main.cpp
 
 CXX_FLAGS = $(SOURCE_FILES) -Wall -fopenmp -lm
 

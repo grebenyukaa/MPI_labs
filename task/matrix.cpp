@@ -105,7 +105,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
 #ifdef MPITV_ABORT_AFTER
         if (iter == MPITV_ABORT_AFTER)
         {
-            std::cout << "aborting with code " << MPITV_ABORTION_CODE << std::endl;
+            std::cout << "mpitv: aborting with code " << MPITV_ABORTION_CODE << std::endl;
             //MPI_Finalize();
             //exit(MPITV_ABORTION_CODE);
             MPI_Abort(MPI_COMM_WORLD, MPITV_ABORTION_CODE);
@@ -236,41 +236,34 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
-    //Logger log(world_rank);
+    Logger log(world_rank);
     try
     {
         assert(world_rank == 0 && "Should be executed in parent node!");
-        //log << "world_size = " << world_size << std::endl;
+        log << "world_size = " << world_size << std::endl;
 
         size_t batch_sz = m_data.size() % (world_size - 1) == 0 ? m_data.size() / (world_size - 1) : m_data.size() / (world_size - 1) + 1;
         for (int node_id = 1; node_id < world_size; ++node_id)
         {
             {
-                volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
                 Matrix::index_type offset = (node_id - 1) * batch_sz;
-                //log << "sending: offset = " << offset << " size = " << std::min(batch_sz, m_data.size() - offset) << " to " << node_id << std::endl;
+                volatile MPI_Trace scp(MPI_Trace::ClSend);
                 MPI_Send(&m_data[offset], std::min(batch_sz, m_data.size() - offset), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
             }
         }
 
-        //log << "wating for reponses..." << std::endl;
-
         for (int node_id = 1; node_id < world_size; ++node_id)
         {
-            //log << "[LEFT:" << std::setw(5) << waiting_for << "]" << " probing ..." << std::endl;
-
             MPI_Status status;
             MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             index_type nodeid = status.MPI_SOURCE;
             index_type tag = status.MPI_TAG;
-            //log << "[LEFT:" << std::setw(5) << waiting_for << "] retrieving response from " << nodeid << " row #" << rowid << std::endl;
 
             std::vector<value_type> resp(3);
             {
-                volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
+                volatile MPI_Trace scp(MPI_Trace::ClRecv);
                 MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, tag, MPI_COMM_WORLD, &status);
             }
-            //log << "  done." << std::endl;
 
             index_type new_imax = (nodeid - 1) * batch_sz + (index_type)resp[0];
             value_type new_max = resp[1];
@@ -283,8 +276,6 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
                 max = new_max;
             }
         }
-
-        //log << "  done waiting." << std::endl;
     }
     catch (const std::exception& e)
     {
@@ -305,13 +296,12 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
-    //Logger log(world_rank);
+    Logger log(world_rank);
     try
     {
         assert(world_rank > 0 && "Should be executed in child node!");
 
-        //index_type iter_cnt = (rows - MIN_BATCH_SIZE) % (world_size - 1) + 1;
-        //log << "node #" << world_rank << " is listening..." << std::endl;
+        log << "node #" << world_rank << " is listening..." << std::endl;
 
         for (index_type iter = 0; /*iter < iter_cnt*/; ++iter)
         {
@@ -324,10 +314,9 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 
             std::vector<value_type> data(sz_to_read);
             {
-                volatile MPI_Trace scp(MPI_Trace::ClRecv); (void)scp;
+                volatile MPI_Trace scp(MPI_Trace::ClRecv);
                 MPI_Recv(&data[0], sz_to_read, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD, &status);
             }
-            //log << "[ITER: #" << std::setw(3) << iter << "] " << "received row #" << rowid << " from node #" << nodeid << " size = " << sz_to_read << std::endl;
 
             value_type new_max;
             value_type norm_prt;
@@ -338,10 +327,9 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             resp[1] = new_max;
             resp[2] = norm_prt;
             {
-                volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
+                volatile MPI_Trace scp(MPI_Trace::ClSend);
                 MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
             }
-            //log << "[ITER: #" << std::setw(3) << iter << "] " << "sent back answer (row #" << rowid << ")" << std::endl;
         }
     }
     catch (const std::exception& e)
