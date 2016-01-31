@@ -9,7 +9,12 @@
 #include "mpi_scope.h"
 #include "matrix.h"
 
-static const int msize = 500;
+//#define MATRIX_SIZE 500
+#ifndef MATRIX_SIZE
+    #error MATRIX_SIZE not defined!
+#endif
+
+static const int msize = MATRIX_SIZE;
 static const double precision = 1e-2;
 
 int main()

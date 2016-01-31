@@ -23,10 +23,10 @@ all: mpi mpi_omp plain
 
 all-tv: all mpi-tv
 
+
+MATRIX_SIZES = 100 200 300 400 500
 mpi-size-test:
-		for size in 100 200 300 400 500 ; do \
-			mpicxx -D"MATRIX_SIZE=$$name" -DCOMPUTATION_MPI $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi_$$name ; \
-		done
+		$(foreach size,$(MATRIX_SIZES),mpicxx -D"MATRIX_SIZE=$(size)" -DCOMPUTATION_MPI $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi_$(size);)
 
 clean-res:
 		rm -f $(BUILD_DIR)/mpi/*
