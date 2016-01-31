@@ -27,7 +27,7 @@ public:
 #define MPI_TRACEFLUSH 5
 #endif
 
-#ifdef MPITV_ENABLED
+#ifdef _MPITV_ENABLED
 #define MPI_TRACE_EVENT(x, color) \
 MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
 x;\
