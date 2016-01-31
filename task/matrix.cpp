@@ -108,6 +108,7 @@ void Matrix::compute_eigenvalues(const value_type& precision)
             std::cout << "mpitv: aborting with code " << MPITV_ABORTION_CODE << std::endl;
             //MPI_Finalize();
             //exit(MPITV_ABORTION_CODE);
+            MPI_Pcontrol(MPI_TRACEFLUSH);
             MPI_Abort(MPI_COMM_WORLD, MPITV_ABORTION_CODE);
             return;
         }

@@ -18,27 +18,20 @@ public:
 #define MPI_TRACELEVEL TRACELEVEL
 #define MPI_TRACENODE  TRACENODE
 #define MPI_TRACEFILES TRACEFILES
+#define MPI_TRACEFLUSH TRACEFLUSH
 #else
 #define MPI_TRACEEVENT 8
 #define MPI_TRACELEVEL 6
 #define MPI_TRACENODE  3
 #define MPI_TRACEFILES 101
+#define MPI_TRACEFLUSH 5
 #endif
 
 #ifdef MPITV_ENABLED
-/*
 #define MPI_TRACE_EVENT(x, color) \
 MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
 x;\
 MPI_Pcontrol(MPI_TRACEEVENT, "exit", color, 0, NULL);
-*/
-#define MPI_TRACE_EVENT(x, color) \
-MPI_Pcontrol(2);\
-MPI_Pcontrol(1);\
-MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
-x;\
-MPI_Pcontrol(MPI_TRACEEVENT, "exit", color, 0, NULL);\
-MPI_Pcontrol(0);
 #else
 #define MPI_TRACE_EVENT(x, color) x;
 #endif
