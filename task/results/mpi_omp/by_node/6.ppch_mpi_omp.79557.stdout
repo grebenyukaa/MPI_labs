@@ -1,0 +1,5 @@
+Dimentions: 1000 x 1000
+iteration 85634 delta = 0.0099992
+   819.633s
+rank 0 in job 1  n1207_60277   caused collective abort of all ranks
+  exit status of rank 0: return code 0 

@@ -1,0 +1,5 @@
+Dimentions: 500 x 500
+iteration 27701 delta = 0.00999928
+   69.2125s
+rank 0 in job 1  n1208_38912   caused collective abort of all ranks
+  exit status of rank 0: killed by signal 9 

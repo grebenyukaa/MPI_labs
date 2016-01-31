@@ -1,0 +1,2 @@
+[cli_0]: aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
