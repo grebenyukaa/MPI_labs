@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 #include "mpi_scope.h"
 
@@ -29,6 +30,6 @@ void MPI_Trace::Init(const int world_rank)
 
     MPI_Pcontrol(MPI_TRACEFILES, NULL, /*oss.str().c_*/m_trace_file_name.c_str(), 0);
     MPI_Pcontrol(MPI_TRACELEVEL, 1, 1, 1);
-    MPI_Pcontrol(MPI_TRACENODE, 1000000, 1, 1);
+    MPI_Pcontrol(MPI_TRACENODE, std::numeric_limits<int>::max(), 1, 1);
     //std::cout << "  done" << std::endl;
 }
