@@ -7,8 +7,8 @@
 # @ class = small
 # @ node = 4
 # @ initialdir = /gpfs/home/iu7/stud051
-# @ output = $(initialdir)/mpi_omp/$(node).$(job_name).$(jobid).stdout
-# @ error = $(initialdir)/mpi_omp/$(node).$(job_name).$(jobid).stderr
+# @ output = $(initialdir)/mpi_omp/by_node/$(node).$(job_name).$(jobid).stdout
+# @ error = $(initialdir)/mpi_omp/by_node/$(node).$(job_name).$(jobid).stderr
 # @ queue
 
 mpdboot -r ssh -n $LOADL_TOTAL_TASKS -f $LOADL_HOSTFILE

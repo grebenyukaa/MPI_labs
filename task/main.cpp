@@ -30,7 +30,7 @@ int main()
 #endif //MPI
         {
             Matrix m(msize);
-            double d = msize;
+            double d = msize * 2;
             for (Matrix::index_type i = 0; i < m.getRowCount(); ++i)
             {
                 m.at_diag(i) = i + 1 + d;
@@ -39,7 +39,7 @@ int main()
                     m.at(i, j) = i + 1 + d;
                 }
             }
-            //std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
+            std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
             //std::cout << "Computation start" << std::endl;
             //std::cout << m << std::endl;
 
