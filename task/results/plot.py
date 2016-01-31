@@ -57,7 +57,7 @@ def plot():
 
     for i, testt in enumerate(ALLOWED_DIRS):
         plts[i].set_title(testt)
-        plts[i].set_ylabel("Time")
+        plts[i].set_ylabel("Time (s)")
         
         mpi_legend = mpatches.Patch(color='red', label='MPI')
         mpi_omp_legend = mpatches.Patch(color='green', label='MPI + OMP')
@@ -78,4 +78,26 @@ def plot():
                 print("X = ", X, "Y = ", Y)
                 plts[i].set_xlabel("MPI node count")
                 plts[i].plot(X, Y, color = color, linewidth = 2)
+    plt.show()
+
+def iter_plot():
+    matplotlib.rcParams.update({'font.size': 22})
+    plotdata = parse_results_tree()
+
+    entries = sorted(plotdata["mpi"]["by_size"], key = lambda x: x["size"])
+    Y = np.array([e["iter"] for e in entries])
+    X = np.array([e["size"] for e in entries])
+    plt.xlabel("Matrix size")
+    plt.ylabel("Iterations")
+    plt.title("Iterations by size")
+    plt.plot(X, Y, "b", linewidth = 2)
+
+    #k = 0.25
+    #SX = np.power(X - X[0], 2) * k + Y[0]
+    #plt.plot(X, SX, "r--", linewidth = 2)
+
+    iter_legend = mpatches.Patch(color='blue', label='iter f()')
+    sugg_legend = mpatches.Patch(color='red', label='linear(size^2)')
+    plt.legend(handles=[iter_legend])#, sugg_legend])
+
     plt.show()
