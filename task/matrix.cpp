@@ -247,8 +247,8 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
         {
             {
                 Matrix::index_type offset = (node_id - 1) * batch_sz;
-                volatile MPI_Trace scp(MPI_Trace::ClSend);
-                MPI_Send(&m_data[offset], std::min(batch_sz, m_data.size() - offset), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
+                //volatile MPI_Trace scp(MPI_Trace::ClSend);
+                MPI_TRACE_EVENT(MPI_Send(&m_data[offset], std::min(batch_sz, m_data.size() - offset), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD), MPI_Trace::ClSend);
             }
         }
 
@@ -261,8 +261,8 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
 
             std::vector<value_type> resp(3);
             {
-                volatile MPI_Trace scp(MPI_Trace::ClRecv);
-                MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, tag, MPI_COMM_WORLD, &status);
+                //volatile MPI_Trace scp(MPI_Trace::ClRecv);
+                MPI_TRACE_EVENT(MPI_Recv(&resp[0], 3, MPI_DOUBLE, nodeid, tag, MPI_COMM_WORLD, &status), MPI_Trace::ClRecv);
             }
 
             index_type new_imax = (nodeid - 1) * batch_sz + (index_type)resp[0];
@@ -314,8 +314,8 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
 
             std::vector<value_type> data(sz_to_read);
             {
-                volatile MPI_Trace scp(MPI_Trace::ClRecv);
-                MPI_Recv(&data[0], sz_to_read, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD, &status);
+                //volatile MPI_Trace scp(MPI_Trace::ClRecv);
+                MPI_TRACE_EVENT(MPI_Recv(&data[0], sz_to_read, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD, &status), MPI_Trace::ClRecv);
             }
 
             value_type new_max;
@@ -327,8 +327,8 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
             resp[1] = new_max;
             resp[2] = norm_prt;
             {
-                volatile MPI_Trace scp(MPI_Trace::ClSend);
-                MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
+                //volatile MPI_Trace scp(MPI_Trace::ClSend);
+                MPI_TRACE_EVENT(MPI_Send(&resp[0], 3, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD), MPI_Trace::ClSend);
             }
         }
     }

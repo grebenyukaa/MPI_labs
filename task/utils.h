@@ -33,4 +33,7 @@ public:
         return ((to + from) * ((to - from) / step + 1) / step) / 2;
     }
 };
+
+//
+
 #endif //UTILS_H

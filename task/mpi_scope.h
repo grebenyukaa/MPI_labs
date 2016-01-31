@@ -12,6 +12,24 @@ public:
 
 //
 
+#ifdef MPITV_ENABLED
+#include <pcontrol.h>
+int MPI_TRACEEVENT = TRACEEVENT;
+int MPI_TRACELEVEL = TRACELEVEL;
+int MPI_TRACENODE  = TRACENODE;
+int MPI_TRACEFILES = TRACEFILES;
+#else
+int MPI_TRACEEVENT = 8;
+int MPI_TRACELEVEL = 6;
+int MPI_TRACENODE  = 3;
+int MPI_TRACEFILES = 101;
+#endif
+
+#define MPI_TRACE_EVENT(x, color) \
+    MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
+    x;\
+    MPI_Pcontrol(MPI_TRACEEVENT, "exit", color, 0, NULL);
+
 class MPI_Trace
 {
 public:

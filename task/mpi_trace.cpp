@@ -5,19 +5,6 @@
 
 #include "mpi_scope.h"
 
-#ifdef MPITV_ENABLED
-#include <pcontrol.h>
-int MPI_TRACEEVENT = TRACEEVENT;
-int MPI_TRACELEVEL = TRACELEVEL;
-int MPI_TRACENODE  = TRACENODE;
-int MPI_TRACEFILES = TRACEFILES;
-#else
-int MPI_TRACEEVENT = 8;
-int MPI_TRACELEVEL = 6;
-int MPI_TRACENODE  = 3;
-int MPI_TRACEFILES = 101;
-#endif
-
 const std::string MPI_Trace::m_trace_file_name = "mpi_trace";
 
 MPI_Trace::MPI_Trace(unsigned int color)
