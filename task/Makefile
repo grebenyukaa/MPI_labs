@@ -23,6 +23,16 @@ all: mpi mpi_omp plain
 
 all-tv: all mpi-tv
 
+mpi-size-test:
+		for size in 100 200 300 400 500 ; do \
+			mpicxx -D"MATRIX_SIZE=$$name" -DCOMPUTATION_MPI $(CXX_FLAGS) -o $(BUILD_DIR)/ppch_mpi_$$name ; \
+		done
+
+clean-res:
+		rm -f $(BUILD_DIR)/mpi/*
+		rm -f $(BUILD_DIR)/mpi_omp/*
+		rm -f $(BUILD_DIR)/plain/*
+
 clean:
 		@rm -rf $(BUILD_DIR)/*
 
