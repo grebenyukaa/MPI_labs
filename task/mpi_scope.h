@@ -42,9 +42,8 @@ public:
     static const std::string m_trace_file_name;
     enum Colors
     {
-        ClRecv = 0xFF0000,
-        ClSend = 0x00FF00,
-        ClProbe = 0x0000FF
+        ClRecv = 1,
+        ClSend = 2
     };
 
     MPI_Trace(unsigned int color);
