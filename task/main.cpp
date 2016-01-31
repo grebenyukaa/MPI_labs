@@ -18,7 +18,6 @@ int main()
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
         MPI_Scope scope; (void)scope;
 
-
         int world_rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
         //int world_rank = MPI::COMM_WORLD.Get_rank();
@@ -35,8 +34,8 @@ int main()
                     m.at(i, j) = i + 1 + d;
                 }
             }
-            std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
-            std::cout << "Computation start" << std::endl;
+            //std::cout << "Dimentions: " << m.getRowCount() << " x " << m.getColCount() << std::endl;
+            //std::cout << "Computation start" << std::endl;
             //std::cout << m << std::endl;
 
             double before, after;
@@ -55,17 +54,17 @@ int main()
             after = clock();
 #endif
 
-
+            /*
             std::cout << "Computed eigenvalues:" << std::endl;
             const std::vector<double>& evs = m.getEigenValues();
             for (size_t i = 0; i < evs.size(); ++i)
                 std::cout << std::setw(10) << evs[i];
             std::cout << std::endl;
+            */
 
 
-
-            std::cout << std::endl;
-            std::cout << "Time elapsed:";
+            //std::cout << std::endl;
+            //std::cout << "Time elapsed:";
 #if defined(COMPUTATION_MPI) || defined(COMPUTATION_MPI_OMP)
             std::cout << std::setw(10) << after - before << "s" << std::endl;
 #elif defined(COMPUTATION_PLAIN)
