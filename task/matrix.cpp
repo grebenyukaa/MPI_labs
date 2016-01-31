@@ -237,11 +237,11 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
-    Logger log(world_rank);
+    //Logger log(world_rank);
     try
     {
         assert(world_rank == 0 && "Should be executed in parent node!");
-        log << "world_size = " << world_size << std::endl;
+        //log << "world_size = " << world_size << std::endl;
 
         size_t batch_sz = m_data.size() % (world_size - 1) == 0 ? m_data.size() / (world_size - 1) : m_data.size() / (world_size - 1) + 1;
         for (int node_id = 1; node_id < world_size; ++node_id)
@@ -297,7 +297,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
-    Logger log(world_rank);
+    //Logger log(world_rank);
     try
     {
         assert(world_rank > 0 && "Should be executed in child node!");
