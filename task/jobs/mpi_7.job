@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+# IBM Load Leveler job control file
+
+# @ job_name = ppch_mpi
+# @ job_type = MPICH
+# @ class = small
+# @ node = 7
+# @ initialdir = /gpfs/home/iu7/stud051
+# @ output = $(initialdir)/mpi/$(node).$(job_name).$(jobid).stdout
+# @ error = $(initialdir)/mpi/$(node).$(job_name).$(jobid).stderr
+# @ queue
+
+mpdboot -r ssh -n $LOADL_TOTAL_TASKS -f $LOADL_HOSTFILE
+
+mpirun -r ssh -machinefile $LOADL_HOSTFILE -n $LOADL_TOTAL_TASKS ./$LOADL_JOB_NAME
+
+mpdallexit
