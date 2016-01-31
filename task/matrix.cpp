@@ -199,23 +199,23 @@ Matrix::index_type find_abs_max_norm(const T* from, const size_t count, T& max_v
     size_t i;
 
 #if defined(COMPUTATION_MPI_OMP)
-    #pragma omp parallel for private(abs_val, i)
+//    #pragma omp parallel for private(abs_val, i)
 #endif
     for (i = 0; i < count; ++i)
     {
         abs_val = std::abs(from[i]);
 #if defined(COMPUTATION_MPI_OMP)
-        #pragma omp atomic update
+//        #pragma omp atomic update
 #endif
         norm_part += abs_val * abs_val;
         if (max_val < abs_val)
         {
 #if defined(COMPUTATION_MPI_OMP)
-            #pragma omp atomic write
+//            #pragma omp atomic write
 #endif
             max_val = abs_val;
 #if defined(COMPUTATION_MPI_OMP)
-            #pragma omp atomic write
+//            #pragma omp atomic write
 #endif
             imax = i;
         }
@@ -248,7 +248,7 @@ std::pair<Matrix::index_type, Matrix::index_type> Matrix::find_max_off_diagonal_
             {
                 volatile MPI_Trace scp(MPI_Trace::ClSend); (void)scp;
                 Matrix::index_type offset = (node_id - 1) * batch_sz;
-                //std::cout << "sending: offset = " << offset << " size = " << std::min(batch_sz, m_data.size() - offset) << " to " << node_id << std::endl;
+                //log << "sending: offset = " << offset << " size = " << std::min(batch_sz, m_data.size() - offset) << " to " << node_id << std::endl;
                 MPI_Send(&m_data[offset], std::min(batch_sz, m_data.size() - offset), MPI_DOUBLE, node_id, node_id, MPI_COMM_WORLD);
             }
         }

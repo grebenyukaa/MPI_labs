@@ -10,7 +10,7 @@
 #include "matrix.h"
 
 static const int msize = 1000;
-static const double precision = 1e-6;
+static const double precision = 1e-2;
 
 int main()
 {
