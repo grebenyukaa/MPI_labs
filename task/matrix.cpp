@@ -301,7 +301,7 @@ void Matrix::find_max_mpi_server(const index_type cols, const index_type rows)
     {
         assert(world_rank > 0 && "Should be executed in child node!");
 
-        log << "node #" << world_rank << " is listening..." << std::endl;
+        //log << "node #" << world_rank << " is listening..." << std::endl;
 
         for (index_type iter = 0; /*iter < iter_cnt*/; ++iter)
         {

@@ -26,10 +26,19 @@ public:
 #endif
 
 #ifdef MPITV_ENABLED
+/*
 #define MPI_TRACE_EVENT(x, color) \
 MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
 x;\
 MPI_Pcontrol(MPI_TRACEEVENT, "exit", color, 0, NULL);
+*/
+#define MPI_TRACE_EVENT(x, color) \
+MPI_Pcontrol(2);\
+MPI_Pcontrol(1);\
+MPI_Pcontrol(MPI_TRACEEVENT, "entry", color, 0, NULL);\
+x;\
+MPI_Pcontrol(MPI_TRACEEVENT, "exit", color, 0, NULL);\
+MPI_Pcontrol(0);
 #else
 #define MPI_TRACE_EVENT(x, color) x;
 #endif
